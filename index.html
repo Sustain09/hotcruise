@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotcruise Community</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #080d1b;
+      color: #f5f7ff;
+    }
+
+    header {
+      padding: 22px 16px;
+      text-align: center;
+      background: linear-gradient(135deg, #111b38, #25134b);
+      border-bottom: 1px solid #28385d;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+      color: #60a5fa;
+      letter-spacing: 2px;
+    }
+
+    header p { color: #c2cbe0; }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 14px 8px;
+      background: #10182c;
+    }
+
+    nav button {
+      background: #202b46;
+      color: white;
+      border: 1px solid #354665;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    nav button.active { background: #2563eb; }
+
+    .container {
+      width: 94%;
+      max-width: 650px;
+      margin: 20px auto;
+    }
+
+    .card {
+      background: #111a2e;
+      border: 1px solid #283956;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 28px 18px;
+      background: linear-gradient(145deg, #152344, #261747);
+    }
+
+    .highlight { color: #a78bfa; }
+
+    .button {
+      background: #2563eb;
+      color: white;
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 4px 3px 4px 0;
+    }
+
+    .purple-button { background: #7c3aed; }
+    .danger-button { background: #9f3030; }
+
+    .input {
+      width: 100%;
+      background: #080f20;
+      color: white;
+      border: 1px solid #354665;
+      border-radius: 9px;
+      padding: 13px;
+      font-size: 16px;
+      margin: 7px 0 12px;
+    }
+
+    label { display: block; }
+
+    .chat-box {
+      height: 250px;
+      overflow-y: auto;
+      background: #080f20;
+      border: 1px solid #283956;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    .chat-message {
+      background: #1a2945;
+      border-left: 3px solid #60a5fa;
+      border-radius: 7px;
+      padding: 10px;
+      margin-bottom: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .chat-message strong { color: #93c5fd; }
+
+    .member {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #17233a;
+      padding: 12px;
+      border-radius: 9px;
+      margin: 10px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .small-text {
+      font-size: 13px;
+      color: #aab8d1;
+    }
+
+    .notice {
+      color: #fbbf24;
+      background: #302711;
+      border-radius: 8px;
+      padding: 11px;
+      font-size: 13px;
+    }
+
+    .status {
+      padding: 10px;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .hidden { display: none; }
+
+    footer {
+      text-align: center;
+      padding: 22px 12px;
+      color: #9eacc6;
+      border-top: 1px solid #283956;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🔥 HOTCRUISE</h1>
+    <p>Your campus. Your people. Your vibe.</p>
+  </header>
+
+  <nav>
+    <button class="active" onclick="showPage('home', this)">Home</button>
+    <button onclick="openProtectedPage('group', this)">Group Chat</button>
+    <button onclick="showPage('members', this)">Members</button>
+    <button onclick="openProtectedPage('private', this)">Private Chat</button>
+    <button onclick="showPage('account', this)">Account</button>
+  </nav>
+
+  <main class="container">
+
+    <section id="home" class="page">
+      <div class="card hero">
+        <p class="highlight">WELCOME TO THE COMMUNITY</p>
+        <h2>What's the <span class="highlight">vibe?</span></h2>
+        <p>
+          Meet people, share gist, exchange ideas,
+          and keep the Hotcruise spirit alive.
+        </p>
+        <button class="button" onclick="showPage('account')">
+          Join the Vibe
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>🚀 Community Lounge</h2>
+        <p>One community. Different personalities. Plenty of gist.</p>
+        <button class="button" onclick="openProtectedPage('group')">
+          Enter Group Chat
+        </button>
+        <button class="button purple-button"
+          onclick="showPage('members')">
+          Meet Members
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>💜 Community Rules</h2>
+        <p>Respect everyone. Avoid spam. Protect personal information.</p>
+        <p>Keep the conversation friendly and welcoming.</p>
+      </div>
+    </section>
+
+    <section id="account" class="page hidden">
+      <div class="card">
+        <h2>👤 Your Hotcruise Account</h2>
+        <p id="accountStatus" class="status">Checking your account...</p>
+
+        <div id="signedOutArea">
+          <h3>Create an account</h3>
+          <form onsubmit="signUp(event)">
+            <label for="signupName">Display name</label>
+            <input class="input" id="signupName"
+              maxlength="30" autocomplete="nickname"
+              placeholder="Choose a display name" required>
+
+            <label for="signupEmail">Email address</label>
+            <input class="input" id="signupEmail"
+              type="email" autocomplete="email"
+              placeholder="you@example.com" required>
+
+            <label for="signupPassword">Password</label>
+            <input class="input" id="signupPassword"
+              type="password" minlength="8"
+              autocomplete="new-password"
+              placeholder="At least 8 characters" required>
+
+            <button class="button" type="submit">Create Account</button>
+          </form>
+
+          <hr>
+
+          <h3>Already a member? Sign in</h3>
+          <form onsubmit="signIn(event)">
+            <label for="loginEmail">Email address</label>
+            <input class="input" id="loginEmail"
+              type="email" autocomplete="email"
+              placeholder="Your registered email" required>
+
+            <label for="loginPassword">Password</label>
+            <input class="input" id="loginPassword"
+              type="password" autocomplete="current-password"
+              placeholder="Your password" required>
+
+            <button class="button purple-button" type="submit">
+              Sign In
+            </button>
+          </form>
+        </div>
+
+        <div id="signedInArea" class="hidden">
+          <h3>Welcome to Hotcruise! 🎉</h3>
+          <p id="memberDetails"></p>
+          <button class="button" onclick="openProtectedPage('group')">
+            Go to Group Chat
+          </button>
+          <button class="button danger-button" onclick="signOut()">
+            Sign Out
+          </button>
+        </div>
+
+        <p id="authMessage" class="status" aria-live="polite"></p>
+
+        <p class="notice">
+          Use an email address you can access. Never share your password.
+          If email confirmation is enabled, confirm your email before signing in.
+        </p>
+      </div>
+    </section>
+
+    <section id="group" class="page hidden">
+      <div class="card">
+        <h2>💬 Hotcruise Group Chat</h2>
+        <p class="small-text">
+          Signed-in members can share messages with the community.
+        </p>
+
+        <div id="chatStatus" class="status small-text" aria-live="polite">
+          Waiting for your account...
+        </div>
+
+        <div id="chatBox" class="chat-box" aria-live="polite">
+          <p class="small-text">Your messages will appear here.</p>
+        </div>
+
+        <form onsubmit="sendGroupMessage(event)">
+          <label for="groupMessage">Your message</label>
+          <input class="input" id="groupMessage"
+            maxlength="500" placeholder="Type your gist here..."
+            autocomplete="off" required>
+
+          <button id="sendGroupButton" class="button" type="submit">
+            Send Message
+          </button>
+          <button class="button purple-button" type="button"
+            onclick="loadGroupMessages()">
+            Refresh Messages
+          </button>
+        </form>
+
+        <p class="notice">
+          Group messages can be read by every signed-in member.
+        </p>
+      </div>
+    </section>
+
+    <section id="members" class="page hidden">
+      <div class="card">
+        <h2>👥 Meet the Members</h2>
+        <p class="small-text">
+          Real Hotcruise members. Tap Message to start a private chat.
+        </p>
+
+        <div id="membersStatus" class="status small-text"
+          aria-live="polite">
+          Loading members...
+        </div>
+
+        <div id="memberList"></div>
+
+        <button class="button purple-button" type="button"
+          onclick="loadMembers()">
+          Refresh Members
+        </button>
+      </div>
+    </section>
+
+    <section id="private" class="page hidden">
+      <div class="card">
+        <h2>🔒 Private Chat</h2>
+        <p id="privateTitle">
+          Go to Members and tap Message to choose someone.
+        </p>
+
+        <div id="privateStatus" class="status small-text"
+          aria-live="polite"></div>
+
+        <div id="privateBox" class="chat-box" aria-live="polite">
+          <p class="small-text">No conversation selected yet.</p>
+        </div>
+
+        <form onsubmit="sendPrivateMessage(event)">
+          <label for="privateMessage">Your message</label>
+          <input class="input" id="privateMessage"
+            maxlength="500" placeholder="Write a message..."
+            autocomplete="off" required>
+
+          <button id="sendPrivateButton" class="button purple-button"
+            type="submit">
+            Send Private Message
+          </button>
+          <button class="button" type="button"
+            onclick="loadPrivateMessages()">
+            Refresh Messages
+          </button>
+          <button class="button" type="button"
+            onclick="showPage('members')">
+            Choose Another Member
+          </button>
+        </form>
+
+        <p class="notice">
+          Private messages can be read only by you and the other member.
+          Still, never share passwords or personal information.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><strong>HOTCRUISE COMMUNITY</strong></p>
+    <p>Built with creativity, code and community spirit.</p>
+    <p>&copy; 2026 Hotcruise Learning Project</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL =
+      "https://pmbwimbcffqrgdkzrbpn.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_ODLke0vgFHCjmCMbnIBwzQ_Pz3thVeS";
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+    let currentUser = null;
+    let selectedMemberId = null;
+    let selectedMemberName = "";
+    let messagePollingTimer = null;
+    let loadingMessages = false;
+    let loadingPrivate = false;
+    let profileNames = {};
+    let profilesLoadedAt = 0;
+
+    function setAuthMessage(message) {
+      document.getElementById("authMessage").textContent = message;
+    }
+
+    function isVisible(pageId) {
+      return !document.getElementById(pageId).classList.contains("hidden");
+    }
+
+    function showPage(pageId, button) {
+      if (["group", "private"].includes(pageId) && !currentUser) {
+        setAuthMessage("Please sign in before opening the chat.");
+        pageId = "account";
+      }
+
+      document.querySelectorAll(".page").forEach(function(page) {
+        page.classList.add("hidden");
+      });
+
+      document.getElementById(pageId).classList.remove("hidden");
+
+      document.querySelectorAll("nav button").forEach(function(item) {
+        item.classList.remove("active");
+      });
+
+      if (button) {
+        button.classList.add("active");
+      } else {
+        const index = {
+          home: 0,
+          group: 1,
+          members: 2,
+          private: 3,
+          account: 4
+        }[pageId];
+
+        const navButtons = document.querySelectorAll("nav button");
+        if (index !== undefined) navButtons[index].classList.add("active");
+      }
+
+      window.scrollTo(0, 0);
+
+      if (pageId === "members") loadMembers();
+      updateMessagePolling();
+    }
+
+    function openProtectedPage(pageId, button) {
+      if (!currentUser) {
+        setAuthMessage("Please create an account or sign in first.");
+        showPage("account");
+        return;
+      }
+
+      showPage(pageId, button);
+    }
+
+    async function signUp(event) {
+      event.preventDefault();
+      setAuthMessage("Creating your account...");
+
+      const username = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
+          options: { data: { username: username } }
+        });
+
+        if (error) throw error;
+
+        if (data.session) {
+          setAuthMessage("Account created! You're signed in.");
+          showPage("home");
+        } else {
+          setAuthMessage(
+            "Registration submitted. Check your email for a confirmation link, then sign in."
+          );
+        }
+      } catch (error) {
+        setAuthMessage("Registration failed: " + error.message);
+      }
+    }
+
+    async function signIn(event) {
+      event.preventDefault();
+      setAuthMessage("Signing in...");
+
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) throw error;
+
+        setAuthMessage("Sign-in successful!");
+        showPage("home");
+      } catch (error) {
+        setAuthMessage("Sign-in failed: " + error.message);
+      }
+    }
+
+    async function signOut() {
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) {
+        setAuthMessage("Sign-out failed: " + error.message);
+        return;
+      }
+
+      currentUser = null;
+      selectedMemberId = null;
+      selectedMemberName = "";
+      profileNames = {};
+      profilesLoadedAt = 0;
+      updateAccountUI();
+      updateMessagePolling();
+      setAuthMessage("You have signed out.");
+      showPage("home");
+    }
+
+    function updateAccountUI() {
+      const signedIn = Boolean(currentUser);
+
+      document.getElementById("signedOutArea")
+        .classList.toggle("hidden", signedIn);
+      document.getElementById("signedInArea")
+        .classList.toggle("hidden", !signedIn);
+
+      document.getElementById("accountStatus").textContent =
+        signedIn ? "Status: Signed in" : "Status: Not signed in";
+
+      if (signedIn) {
+        const username =
+          currentUser.user_metadata?.username || "Hotcruise Member";
+
+        document.getElementById("memberDetails").textContent =
+          username + " · " + currentUser.email;
+      }
+    }
+
+    supabaseClient.auth.onAuthStateChange(function(event, session) {
+      currentUser = session ? session.user : null;
+      updateAccountUI();
+      updateMessagePolling();
+    });
+
+    async function initialiseAuth() {
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+
+        currentUser = data.session ? data.session.user : null;
+        updateAccountUI();
+        updateMessagePolling();
+      } catch (error) {
+        setAuthMessage("Could not check your account. Check your connection.");
+      }
+    }
+
+    function showChatStatus(message) {
+      document.getElementById("chatStatus").textContent = message;
+    }
+
+    function showPrivateStatus(message) {
+      document.getElementById("privateStatus").textContent = message;
+    }
+
+    function getDisplayName(userId) {
+      if (currentUser && userId === currentUser.id) {
+        return currentUser.user_metadata?.username || "You";
+      }
+      return profileNames[userId] || "Hotcruise Member";
+    }
+
+    async function loadProfiles(force) {
+      if (!currentUser) return [];
+
+      const fresh = Date.now() - profilesLoadedAt < 60000;
+      if (!force && fresh) return null;
+
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("id, username")
+        .order("username", { ascending: true });
+
+      if (error) throw error;
+
+      profileNames = {};
+      data.forEach(function(profile) {
+        profileNames[profile.id] = profile.username || "Hotcruise Member";
+      });
+      profilesLoadedAt = Date.now();
+
+      return data;
+    }
+
+    function updateMessagePolling() {
+      if (messagePollingTimer) {
+        clearInterval(messagePollingTimer);
+        messagePollingTimer = null;
+      }
+
+      if (!currentUser) {
+        showChatStatus("Please sign in to use group chat.");
+        return;
+      }
+
+      if (isVisible("group")) {
+        showChatStatus("Connected to your account. Checking for messages...");
+        loadGroupMessages();
+      }
+
+      if (isVisible("private") && selectedMemberId) {
+        loadPrivateMessages();
+      }
+
+      if (isVisible("group") || (isVisible("private") && selectedMemberId)) {
+        messagePollingTimer = setInterval(function() {
+          if (!currentUser) return;
+          if (isVisible("group")) loadGroupMessages();
+          if (isVisible("private") && selectedMemberId) {
+            loadPrivateMessages();
+          }
+        }, 10000);
+      }
+    }
+
+    function renderMessages(box, messages, emptyText) {
+      const wasNearBottom =
+        box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+
+      box.replaceChildren();
+
+      if (!messages || messages.length === 0) {
+        const note = document.createElement("p");
+        note.className = "small-text";
+        note.textContent = emptyText;
+        box.appendChild(note);
+        return;
+      }
+
+      messages.forEach(function(item) {
+        const bubble = document.createElement("div");
+        const sender = document.createElement("strong");
+        const text = document.createElement("p");
+        const time = document.createElement("small");
+
+        bubble.className = "chat-message";
+        sender.textContent = getDisplayName(item.sender_id);
+        text.textContent = item.content;
+        time.className = "small-text";
+        time.textContent = item.created_at
+          ? new Date(item.created_at).toLocaleString()
+          : "";
+
+        bubble.appendChild(sender);
+        bubble.appendChild(text);
+        bubble.appendChild(time);
+        box.appendChild(bubble);
+      });
+
+      if (wasNearBottom) box.scrollTop = box.scrollHeight;
+    }
+
+    async function loadGroupMessages() {
+      if (!currentUser || loadingMessages) return;
+
+      loadingMessages = true;
+
+      try {
+        try {
+          await loadProfiles(false);
+        } catch (profileError) {
+          // Names are optional. Messages can still load without them.
+        }
+
+        const { data, error } = await supabaseClient
+          .from("chat_messages")
+          .select("id, sender_id, content, created_at")
+          .is("recipient_id", null)
+          .order("created_at", { ascending: true })
+          .limit(100);
+
+        if (error) throw error;
+
+        renderMessages(
+          document.getElementById("chatBox"),
+          data,
+          "No messages yet. Start the conversation!"
+        );
+        showChatStatus("Messages loaded from Supabase.");
+      } catch (error) {
+        showChatStatus(
+          "Could not load messages: " + error.message
+        );
+      } finally {
+        loadingMessages = false;
+      }
+    }
+
+    async function sendGroupMessage(event) {
+      if (event) event.preventDefault();
+
+      if (!currentUser) {
+        showPage("account");
+        setAuthMessage("Please sign in before sending a message.");
+        return;
+      }
+
+      const input = document.getElementById("groupMessage");
+      const message = input.value.trim();
+      const button = document.getElementById("sendGroupButton");
+
+      if (!message) {
+        showChatStatus("Please type a message first.");
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Sending...";
+      showChatStatus("Saving your message...");
+
+      try {
+        const { error } = await supabaseClient
+          .from("chat_messages")
+          .insert({
+            sender_id: currentUser.id,
+            content: message
+          });
+
+        if (error) throw error;
+
+        input.value = "";
+        showChatStatus("Message saved successfully!");
+        await loadGroupMessages();
+      } catch (error) {
+        showChatStatus("Message not saved: " + error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Send Message";
+      }
+    }
+
+    async function loadMembers() {
+      const status = document.getElementById("membersStatus");
+      const list = document.getElementById("memberList");
+
+      list.replaceChildren();
+
+      if (!currentUser) {
+        status.textContent = "Please sign in to see the members.";
+        return;
+      }
+
+      status.textContent = "Loading members...";
+
+      try {
+        const data = await loadProfiles(true);
+
+        const others = data.filter(function(profile) {
+          return profile.id !== currentUser.id;
+        });
+
+        if (others.length === 0) {
+          status.textContent =
+            "No other members yet. Invite a friend to join Hotcruise!";
+          return;
+        }
+
+        others.forEach(function(profile) {
+          const row = document.createElement("div");
+          const name = document.createElement("strong");
+          const button = document.createElement("button");
+
+          row.className = "member";
+          name.textContent = profile.username || "Hotcruise Member";
+
+          button.className = "button";
+          button.type = "button";
+          button.textContent = "Message";
+          button.addEventListener("click", function() {
+            openPrivateChat(profile.id, profile.username);
+          });
+
+          row.appendChild(name);
+          row.appendChild(button);
+          list.appendChild(row);
+        });
+
+        status.textContent = others.length + " member(s) found.";
+      } catch (error) {
+        status.textContent = "Could not load members: " + error.message;
+      }
+    }
+
+    function openPrivateChat(memberId, memberName) {
+      if (!currentUser) {
+        setAuthMessage("Please sign in before opening the chat.");
+        showPage("account");
+        return;
+      }
+
+      selectedMemberId = memberId;
+      selectedMemberName = memberName || "Hotcruise Member";
+
+      document.getElementById("privateTitle").textContent =
+        "Private conversation with " + selectedMemberName;
+
+      const box = document.getElementById("privateBox");
+      box.replaceChildren();
+
+      const note = document.createElement("p");
+      note.className = "small-text";
+      note.textContent = "Loading your conversation...";
+      box.appendChild(note);
+
+      showPrivateStatus("");
+      showPage("private");
+    }
+
+    async function loadPrivateMessages() {
+      if (!currentUser || !selectedMemberId || loadingPrivate) return;
+
+      loadingPrivate = true;
+
+      const me = currentUser.id;
+      const other = selectedMemberId;
+
+      try {
+        try {
+          await loadProfiles(false);
+        } catch (profileError) {
+          // Names are optional. Messages can still load without them.
+        }
+
+        const { data, error } = await supabaseClient
+          .from("chat_messages")
+          .select("id, sender_id, recipient_id, content, created_at")
+          .or(
+            "and(sender_id.eq." + me + ",recipient_id.eq." + other + ")," +
+            "and(sender_id.eq." + other + ",recipient_id.eq." + me + ")"
+          )
+          .order("created_at", { ascending: true })
+          .limit(100);
+
+        if (error) throw error;
+
+        renderMessages(
+          document.getElementById("privateBox"),
+          data,
+          "No messages yet. Say hello to " + selectedMemberName + "!"
+        );
+        showPrivateStatus("Conversation loaded.");
+      } catch (error) {
+        showPrivateStatus("Could not load messages: " + error.message);
+      } finally {
+        loadingPrivate = false;
+      }
+    }
+
+    async function sendPrivateMessage(event) {
+      if (event) event.preventDefault();
+
+      if (!currentUser) {
+        showPage("account");
+        return;
+      }
+
+      if (!selectedMemberId) {
+        showPrivateStatus("Go to Members and choose someone first.");
+        return;
+      }
+
+      const input = document.getElementById("privateMessage");
+      const message = input.value.trim();
+      const button = document.getElementById("sendPrivateButton");
+
+      if (!message) {
+        showPrivateStatus("Please type a message first.");
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Sending...";
+      showPrivateStatus("Sending your message...");
+
+      try {
+        const { error } = await supabaseClient
+          .from("chat_messages")
+          .insert({
+            sender_id: currentUser.id,
+            recipient_id: selectedMemberId,
+            content: message
+          });
+
+        if (error) throw error;
+
+        input.value = "";
+        showPrivateStatus("Message sent!");
+        await loadPrivateMessages();
+      } catch (error) {
+        showPrivateStatus("Message not sent: " + error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Send Private Message";
+      }
+    }
+
+    initialiseAuth();
+  </script>
+</body>
+</html>
