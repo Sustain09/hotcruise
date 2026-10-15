@@ -274,6 +274,14 @@
     .member strong { flex: 1; font-size: 15px; }
     .member .button { margin: 0; min-height: 40px; padding: 8px 18px; font-size: 14px; }
 
+    .chat-message audio {
+      display: block;
+      width: 100%;
+      min-width: 210px;
+      height: 40px;
+      margin: 6px 0 4px;
+    }
+
     .small-text { font-size: 13px; color: var(--muted); }
 
     .notice {
@@ -465,6 +473,14 @@
           <button id="sendGroupButton" class="button" type="submit">
             Send Message
           </button>
+          <button id="groupVoiceButton" class="button purple-button"
+            type="button" onclick="toggleVoice('group')">
+            🎤 Record Voice Note
+          </button>
+          <button id="groupVoiceCancel" class="button hidden"
+            type="button" onclick="cancelVoice()">
+            Cancel
+          </button>
           <button class="button purple-button" type="button"
             onclick="loadGroupMessages()">
             Refresh Messages
@@ -521,6 +537,14 @@
           <button id="sendPrivateButton" class="button purple-button"
             type="submit">
             Send Private Message
+          </button>
+          <button id="privateVoiceButton" class="button purple-button"
+            type="button" onclick="toggleVoice('private')">
+            🎤 Record Voice Note
+          </button>
+          <button id="privateVoiceCancel" class="button hidden"
+            type="button" onclick="cancelVoice()">
+            Cancel
           </button>
           <button class="button" type="button"
             onclick="loadPrivateMessages()">
@@ -822,19 +846,74 @@
       return avatar;
     }
 
+    const voiceUrlCache = {};
+
+    async function getVoiceUrl(path) {
+      const saved = voiceUrlCache[path];
+      if (saved && Date.now() - saved.time < 50 * 60 * 1000) {
+        return saved.url;
+      }
+
+      const { data, error } = await supabaseClient.storage
+        .from("voice-notes")
+        .createSignedUrl(path, 3600);
+
+      if (error) throw error;
+
+      voiceUrlCache[path] = { url: data.signedUrl, time: Date.now() };
+      return data.signedUrl;
+    }
+
+    function makeVoicePlayer(path) {
+      const wrap = document.createElement("div");
+      const audio = document.createElement("audio");
+      const note = document.createElement("p");
+
+      audio.controls = true;
+      audio.preload = "metadata";
+      note.textContent = "Loading voice note...";
+      note.className = "small-text";
+
+      wrap.appendChild(note);
+
+      getVoiceUrl(path)
+        .then(function(url) {
+          audio.src = url;
+          wrap.replaceChildren(audio);
+        })
+        .catch(function() {
+          note.textContent = "Voice note could not be loaded.";
+        });
+
+      return wrap;
+    }
+
     function renderMessages(box, messages, emptyText) {
-      const wasNearBottom =
-        box.scrollHeight - box.scrollTop - box.clientHeight < 60;
-
-      box.replaceChildren();
-
       if (!messages || messages.length === 0) {
+        box.dataset.sig = "";
+        box.replaceChildren();
         const note = document.createElement("p");
         note.className = "small-text";
         note.textContent = emptyText;
         box.appendChild(note);
         return;
       }
+
+      const signature =
+        (currentUser ? currentUser.id : "") + "|" +
+        messages.map(function(item) { return item.id; }).join(",");
+
+      // Nothing new, so leave the chat alone (keeps voice notes playing).
+      if (box.dataset.sig === signature && box.children.length > 0) {
+        return;
+      }
+
+      box.dataset.sig = signature;
+
+      const wasNearBottom =
+        box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+
+      box.replaceChildren();
 
       messages.forEach(function(item) {
         const mine = currentUser && item.sender_id === currentUser.id;
@@ -843,19 +922,25 @@
         const row = document.createElement("div");
         const bubble = document.createElement("div");
         const sender = document.createElement("strong");
-        const text = document.createElement("p");
         const time = document.createElement("small");
 
         row.className = "msg-row " + (mine ? "mine" : "theirs");
         bubble.className = "chat-message";
         sender.textContent = mine ? "You" : name;
-        text.textContent = item.content;
         time.textContent = item.created_at
           ? new Date(item.created_at).toLocaleString()
           : "";
 
         bubble.appendChild(sender);
-        bubble.appendChild(text);
+
+        if (item.audio_path) {
+          bubble.appendChild(makeVoicePlayer(item.audio_path));
+        } else {
+          const text = document.createElement("p");
+          text.textContent = item.content;
+          bubble.appendChild(text);
+        }
+
         bubble.appendChild(time);
 
         if (!mine) row.appendChild(makeAvatar(item.sender_id, name));
@@ -863,7 +948,9 @@
         box.appendChild(row);
       });
 
-      if (wasNearBottom) box.scrollTop = box.scrollHeight;
+      if (wasNearBottom || box.children.length <= 12) {
+        box.scrollTop = box.scrollHeight;
+      }
     }
 
     async function loadGroupMessages() {
@@ -880,7 +967,7 @@
 
         const { data, error } = await supabaseClient
           .from("chat_messages")
-          .select("id, sender_id, content, created_at")
+          .select("id, sender_id, content, audio_path, created_at")
           .is("recipient_id", null)
           .order("created_at", { ascending: true })
           .limit(100);
@@ -1040,7 +1127,7 @@
 
         const { data, error } = await supabaseClient
           .from("chat_messages")
-          .select("id, sender_id, recipient_id, content, created_at")
+          .select("id, sender_id, recipient_id, content, audio_path, created_at")
           .or(
             "and(sender_id.eq." + me + ",recipient_id.eq." + other + ")," +
             "and(sender_id.eq." + other + ",recipient_id.eq." + me + ")"
@@ -1108,6 +1195,214 @@
       } finally {
         button.disabled = false;
         button.textContent = "Send Private Message";
+      }
+    }
+
+    // ---------- Voice notes ----------
+    const MAX_VOICE_SECONDS = 60;
+    let voiceRecorder = null;
+    let voiceStream = null;
+    let voiceChunks = [];
+    let voiceTimer = null;
+    let voiceSeconds = 0;
+    let voiceTarget = null;
+    let voiceRecipient = null;
+    let voiceCancelled = false;
+    let voiceMime = "";
+
+    function voiceStatus(target, message) {
+      if (target === "private") showPrivateStatus(message);
+      else showChatStatus(message);
+    }
+
+    function pickVoiceType() {
+      const options = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus"
+      ];
+
+      for (const type of options) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(type)) {
+          return type;
+        }
+      }
+      return "";
+    }
+
+    function updateVoiceUI(target, recording) {
+      const button = document.getElementById(target + "VoiceButton");
+      const cancel = document.getElementById(target + "VoiceCancel");
+      if (!button || !cancel) return;
+
+      if (recording) {
+        const m = Math.floor(voiceSeconds / 60);
+        const s = String(voiceSeconds % 60).padStart(2, "0");
+        button.textContent = "⏹ Stop and Send (" + m + ":" + s + ")";
+        button.classList.add("danger-button");
+        cancel.classList.remove("hidden");
+      } else {
+        button.textContent = "🎤 Record Voice Note";
+        button.classList.remove("danger-button");
+        cancel.classList.add("hidden");
+      }
+    }
+
+    async function toggleVoice(target) {
+      if (!currentUser) {
+        showPage("account");
+        setAuthMessage("Please sign in before sending a voice note.");
+        return;
+      }
+
+      if (voiceRecorder && voiceRecorder.state === "recording") {
+        if (voiceTarget === target) {
+          voiceRecorder.stop();
+        } else {
+          voiceStatus(target, "Finish your other recording first.");
+        }
+        return;
+      }
+
+      if (target === "private" && !selectedMemberId) {
+        voiceStatus(target, "Go to Members and choose someone first.");
+        return;
+      }
+
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        voiceStatus(target, "This browser cannot record voice notes.");
+        return;
+      }
+
+      try {
+        voiceStream = await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+      } catch (error) {
+        voiceStatus(
+          target,
+          "Microphone is blocked. Allow the microphone for this site, then try again."
+        );
+        return;
+      }
+
+      voiceMime = pickVoiceType();
+      voiceChunks = [];
+      voiceCancelled = false;
+      voiceSeconds = 0;
+      voiceTarget = target;
+      voiceRecipient = target === "private" ? selectedMemberId : null;
+
+      try {
+        voiceRecorder = voiceMime
+          ? new MediaRecorder(voiceStream, { mimeType: voiceMime })
+          : new MediaRecorder(voiceStream);
+      } catch (error) {
+        voiceStream.getTracks().forEach(function(t) { t.stop(); });
+        voiceStatus(target, "Could not start recording: " + error.message);
+        return;
+      }
+
+      voiceRecorder.ondataavailable = function(event) {
+        if (event.data && event.data.size > 0) voiceChunks.push(event.data);
+      };
+
+      voiceRecorder.onstop = finishVoice;
+      voiceRecorder.start();
+
+      updateVoiceUI(target, true);
+      voiceStatus(target, "Recording... tap Stop and Send when you finish.");
+
+      voiceTimer = setInterval(function() {
+        voiceSeconds += 1;
+        updateVoiceUI(target, true);
+        if (voiceSeconds >= MAX_VOICE_SECONDS && voiceRecorder) {
+          voiceRecorder.stop();
+        }
+      }, 1000);
+    }
+
+    function cancelVoice() {
+      if (voiceRecorder && voiceRecorder.state === "recording") {
+        voiceCancelled = true;
+        voiceRecorder.stop();
+      }
+    }
+
+    async function finishVoice() {
+      const target = voiceTarget;
+      const recipient = voiceRecipient;
+      const seconds = voiceSeconds;
+      const type = (voiceRecorder && voiceRecorder.mimeType) || voiceMime;
+
+      clearInterval(voiceTimer);
+      voiceTimer = null;
+
+      if (voiceStream) {
+        voiceStream.getTracks().forEach(function(t) { t.stop(); });
+        voiceStream = null;
+      }
+
+      voiceRecorder = null;
+      updateVoiceUI(target, false);
+
+      if (voiceCancelled) {
+        voiceStatus(target, "Recording cancelled.");
+        return;
+      }
+
+      if (seconds < 1 || voiceChunks.length === 0) {
+        voiceStatus(target, "That was too short. Hold on a little longer.");
+        return;
+      }
+
+      const baseType = (type || "audio/webm").split(";")[0];
+      const blob = new Blob(voiceChunks, { type: baseType });
+      let extension = "webm";
+      if (baseType.includes("mp4")) extension = "m4a";
+      if (baseType.includes("ogg")) extension = "ogg";
+
+      const path =
+        currentUser.id + "/" + Date.now() + "." + extension;
+
+      const button = document.getElementById(target + "VoiceButton");
+      button.disabled = true;
+      button.textContent = "Sending...";
+      voiceStatus(target, "Uploading your voice note...");
+
+      try {
+        const upload = await supabaseClient.storage
+          .from("voice-notes")
+          .upload(path, blob, { contentType: baseType, upsert: false });
+
+        if (upload.error) throw upload.error;
+
+        const row = {
+          sender_id: currentUser.id,
+          content: "🎤 Voice note",
+          audio_path: path
+        };
+        if (recipient) row.recipient_id = recipient;
+
+        const insert = await supabaseClient
+          .from("chat_messages")
+          .insert(row);
+
+        if (insert.error) {
+          await supabaseClient.storage.from("voice-notes").remove([path]);
+          throw insert.error;
+        }
+
+        voiceStatus(target, "Voice note sent!");
+
+        if (target === "private") await loadPrivateMessages();
+        else await loadGroupMessages();
+      } catch (error) {
+        voiceStatus(target, "Voice note not sent: " + error.message);
+      } finally {
+        button.disabled = false;
+        updateVoiceUI(target, false);
       }
     }
 
