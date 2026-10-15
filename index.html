@@ -4,152 +4,290 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hotcruise Community</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #070b18;
+      --glass: rgba(255, 255, 255, 0.055);
+      --glass-border: rgba(255, 255, 255, 0.11);
+      --text: #f4f6ff;
+      --muted: #9fb0d0;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+    }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #080d1b;
-      color: #f5f7ff;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12% 8%, rgba(139, 92, 246, 0.28), transparent 42%),
+        radial-gradient(circle at 92% 22%, rgba(59, 130, 246, 0.24), transparent 40%),
+        radial-gradient(circle at 50% 100%, rgba(236, 72, 153, 0.16), transparent 45%);
+      background-attachment: fixed;
     }
 
     header {
-      padding: 22px 16px;
+      padding: 30px 16px 18px;
       text-align: center;
-      background: linear-gradient(135deg, #111b38, #25134b);
-      border-bottom: 1px solid #28385d;
     }
 
     header h1 {
       margin: 0;
-      font-size: 30px;
-      color: #60a5fa;
-      letter-spacing: 2px;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
-    header p { color: #c2cbe0; }
+    header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
 
     nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
       gap: 8px;
-      padding: 14px 8px;
-      background: #10182c;
+      padding: 12px 8px;
+      background: rgba(7, 11, 24, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
     }
 
     nav button {
-      background: #202b46;
-      color: white;
-      border: 1px solid #354665;
-      padding: 10px;
-      border-radius: 8px;
+      font-family: inherit;
+      background: var(--glass);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
+      padding: 10px 16px;
+      min-height: 42px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
+      transition: transform 0.15s ease, background 0.2s ease;
     }
 
-    nav button.active { background: #2563eb; }
+    nav button:active { transform: scale(0.95); }
+
+    nav button.active {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      border-color: transparent;
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+    }
 
     .container {
       width: 94%;
-      max-width: 650px;
-      margin: 20px auto;
+      max-width: 680px;
+      margin: 22px auto;
     }
 
     .card {
-      background: #111a2e;
-      border: 1px solid #283956;
-      border-radius: 14px;
-      padding: 18px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      padding: 20px;
       margin-bottom: 18px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      animation: rise 0.45s ease both;
     }
+
+    .card h2 { margin-top: 0; font-weight: 700; }
 
     .hero {
       text-align: center;
-      padding: 28px 18px;
-      background: linear-gradient(145deg, #152344, #261747);
+      padding: 34px 20px;
+      background:
+        linear-gradient(145deg, rgba(59, 130, 246, 0.22), rgba(139, 92, 246, 0.22) 55%, rgba(236, 72, 153, 0.18));
     }
 
-    .highlight { color: #a78bfa; }
+    .hero h2 { font-size: 30px; margin: 8px 0 12px; }
+    .hero .emoji { font-size: 44px; display: inline-block; animation: float 3.2s ease-in-out infinite; }
+
+    .highlight {
+      background: linear-gradient(90deg, #93c5fd, #c4b5fd, #f9a8d4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 700;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 2.5px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0 6px;
+    }
+
+    .feature {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 14px;
+      text-align: left;
+    }
+
+    .feature span { font-size: 24px; }
+    .feature strong { display: block; margin-top: 4px; font-size: 14px; }
+    .feature small { color: var(--muted); font-size: 12px; }
 
     .button {
-      background: #2563eb;
+      font-family: inherit;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
       color: white;
       border: 0;
-      border-radius: 9px;
-      padding: 12px 16px;
+      border-radius: 999px;
+      padding: 12px 22px;
+      min-height: 46px;
       font-size: 15px;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
-      margin: 4px 3px 4px 0;
+      margin: 5px 6px 5px 0;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.38);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
     }
 
-    .purple-button { background: #7c3aed; }
-    .danger-button { background: #9f3030; }
+    .button:active { transform: scale(0.96); box-shadow: 0 3px 10px rgba(79, 70, 229, 0.4); }
+    .button:disabled { opacity: 0.6; }
+
+    .purple-button { background: linear-gradient(135deg, #7c3aed, #c026d3); box-shadow: 0 8px 20px rgba(168, 85, 247, 0.38); }
+    .danger-button { background: linear-gradient(135deg, #dc2626, #9f1239); box-shadow: 0 8px 20px rgba(220, 38, 38, 0.32); }
 
     .input {
       width: 100%;
-      background: #080f20;
+      font-family: inherit;
+      background: rgba(5, 9, 22, 0.75);
       color: white;
-      border: 1px solid #354665;
-      border-radius: 9px;
-      padding: 13px;
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 14px 16px;
       font-size: 16px;
-      margin: 7px 0 12px;
+      margin: 7px 0 14px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    label { display: block; }
+    .input:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.28);
+    }
+
+    label { display: block; font-size: 14px; font-weight: 600; color: #dbe4ff; }
+    hr { border: 0; border-top: 1px solid var(--glass-border); margin: 22px 0; }
 
     .chat-box {
-      height: 250px;
+      height: 340px;
       overflow-y: auto;
-      background: #080f20;
-      border: 1px solid #283956;
-      border-radius: 10px;
-      padding: 12px;
-      margin: 12px 0;
+      background: rgba(4, 8, 20, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 14px;
+      margin: 14px 0;
+    }
+
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      margin-bottom: 12px;
+      animation: rise 0.3s ease both;
+    }
+
+    .msg-row.mine { flex-direction: row-reverse; }
+
+    .avatar {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: white;
+      text-transform: uppercase;
     }
 
     .chat-message {
-      background: #1a2945;
-      border-left: 3px solid #60a5fa;
-      border-radius: 7px;
-      padding: 10px;
-      margin-bottom: 10px;
+      max-width: 78%;
+      padding: 10px 14px;
+      border-radius: 18px;
       overflow-wrap: anywhere;
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid var(--glass-border);
+      border-bottom-left-radius: 6px;
     }
 
-    .chat-message strong { color: #93c5fd; }
+    .msg-row.mine .chat-message {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-color: transparent;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 6px;
+    }
+
+    .chat-message strong { display: block; font-size: 12px; color: #bfd3ff; margin-bottom: 2px; }
+    .chat-message p { margin: 0 0 4px; font-size: 15px; }
+    .chat-message small { font-size: 11px; color: rgba(255, 255, 255, 0.62); }
 
     .member {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: #17233a;
-      padding: 12px;
-      border-radius: 9px;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--glass-border);
+      padding: 12px 14px;
+      border-radius: 16px;
       margin: 10px 0;
       overflow-wrap: anywhere;
     }
 
-    .small-text {
-      font-size: 13px;
-      color: #aab8d1;
-    }
+    .member strong { flex: 1; font-size: 15px; }
+    .member .button { margin: 0; min-height: 40px; padding: 8px 18px; font-size: 14px; }
+
+    .small-text { font-size: 13px; color: var(--muted); }
 
     .notice {
-      color: #fbbf24;
-      background: #302711;
-      border-radius: 8px;
-      padding: 11px;
+      color: #fcd34d;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: 14px;
+      padding: 12px 14px;
       font-size: 13px;
     }
 
     .status {
-      padding: 10px;
-      border-radius: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
       overflow-wrap: anywhere;
     }
 
@@ -157,10 +295,26 @@
 
     footer {
       text-align: center;
-      padding: 22px 12px;
-      color: #9eacc6;
-      border-top: 1px solid #283956;
+      padding: 26px 12px 34px;
+      color: var(--muted);
+      border-top: 1px solid var(--glass-border);
       font-size: 13px;
+    }
+
+    footer p { margin: 4px 0; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
@@ -183,12 +337,19 @@
 
     <section id="home" class="page">
       <div class="card hero">
-        <p class="highlight">WELCOME TO THE COMMUNITY</p>
+        <span class="emoji">🔥</span>
+        <p class="eyebrow highlight">WELCOME TO THE COMMUNITY</p>
         <h2>What's the <span class="highlight">vibe?</span></h2>
-        <p>
+        <p class="small-text">
           Meet people, share gist, exchange ideas,
           and keep the Hotcruise spirit alive.
         </p>
+        <div class="feature-grid">
+          <div class="feature"><span>💬</span><strong>Group Chat</strong><small>Talk with everyone</small></div>
+          <div class="feature"><span>🔒</span><strong>Private Chat</strong><small>Message one friend</small></div>
+          <div class="feature"><span>👥</span><strong>Members</strong><small>See who's here</small></div>
+          <div class="feature"><span>🆓</span><strong>Free</strong><small>Always free to join</small></div>
+        </div>
         <button class="button" onclick="showPage('account')">
           Join the Vibe
         </button>
@@ -642,6 +803,25 @@
       }
     }
 
+    function avatarColor(id) {
+      const colors = [
+        "#2563eb", "#7c3aed", "#db2777", "#ea580c",
+        "#059669", "#0891b2", "#ca8a04", "#4f46e5"
+      ];
+      let total = 0;
+      const text = String(id || "");
+      for (let i = 0; i < text.length; i++) total += text.charCodeAt(i);
+      return colors[total % colors.length];
+    }
+
+    function makeAvatar(id, name) {
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.style.background = avatarColor(id);
+      avatar.textContent = (name || "H").trim().charAt(0) || "H";
+      return avatar;
+    }
+
     function renderMessages(box, messages, emptyText) {
       const wasNearBottom =
         box.scrollHeight - box.scrollTop - box.clientHeight < 60;
@@ -657,15 +837,19 @@
       }
 
       messages.forEach(function(item) {
+        const mine = currentUser && item.sender_id === currentUser.id;
+        const name = getDisplayName(item.sender_id);
+
+        const row = document.createElement("div");
         const bubble = document.createElement("div");
         const sender = document.createElement("strong");
         const text = document.createElement("p");
         const time = document.createElement("small");
 
+        row.className = "msg-row " + (mine ? "mine" : "theirs");
         bubble.className = "chat-message";
-        sender.textContent = getDisplayName(item.sender_id);
+        sender.textContent = mine ? "You" : name;
         text.textContent = item.content;
-        time.className = "small-text";
         time.textContent = item.created_at
           ? new Date(item.created_at).toLocaleString()
           : "";
@@ -673,7 +857,10 @@
         bubble.appendChild(sender);
         bubble.appendChild(text);
         bubble.appendChild(time);
-        box.appendChild(bubble);
+
+        if (!mine) row.appendChild(makeAvatar(item.sender_id, name));
+        row.appendChild(bubble);
+        box.appendChild(row);
       });
 
       if (wasNearBottom) box.scrollTop = box.scrollHeight;
@@ -799,6 +986,7 @@
             openPrivateChat(profile.id, profile.username);
           });
 
+          row.appendChild(makeAvatar(profile.id, profile.username));
           row.appendChild(name);
           row.appendChild(button);
           list.appendChild(row);
